@@ -53,21 +53,28 @@ public class TwoStarterCode extends Application {
     private void paintSet(GraphicsContext ctx, double reMin, double reMax, double imMin, double imMax) {
         double precision = Math.max((reMax - reMin) / CANVAS_WIDTH, (imMax - imMin) / CANVAS_HEIGHT);
         int convergenceSteps = 50;
-        for (double c = reMin, xR = 0; xR < CANVAS_WIDTH; c = c + precision, xR++) {
-            for (double ci = imMin, yR = 0; yR < CANVAS_HEIGHT; ci = ci + precision, yR++) {
-                double convergenceValue = checkConvergence(ci, c, convergenceSteps);
-                double t1 = (double) convergenceValue / convergenceSteps;
-                double c1 = Math.min(255 * 2 * t1, 255);
-                double c2 = Math.max(255 * (2 * t1 - 1), 0);
- 
-                if (convergenceValue != convergenceSteps) {
-                    ctx.setFill(Color.color(c2 / 255.0, c1 / 255.0, c2 / 255.0));
-                } else {
-                    ctx.setFill(Color.PURPLE); // Convergence Color
+        for(int i = 1; i <= 10; i++){
+
+            int iXr = i * 70;
+            double xStartPrecision =  reMin + precision * 70 * i;
+            for (double c = xStartPrecision, xR = iXr - 70; xR < iXr; c = c + precision, xR++) {
+                System.out.println(precision);
+                for (double ci = imMin, yR = 0; yR < CANVAS_HEIGHT; ci = ci + precision, yR++) {
+                    double convergenceValue = checkConvergence(ci, c, convergenceSteps);
+                    double t1 = (double) convergenceValue / convergenceSteps;
+                    double c1 = Math.min(255 * 2 * t1, 255);
+                    double c2 = Math.max(255 * (2 * t1 - 1), 0);
+
+                    if (convergenceValue != convergenceSteps) {
+                        ctx.setFill(Color.color(c2 / 255.0, c1 / 255.0, c2 / 255.0));
+                    } else {
+                        ctx.setFill(Color.PURPLE); // Convergence Color
+                    }
+                    ctx.fillRect(xR, yR, 1, 1);
                 }
-                ctx.fillRect(xR, yR, 1, 1);
             }
         }
+
     }
  
     /**
@@ -82,7 +89,7 @@ public class TwoStarterCode extends Application {
             double zT = z * z - (zi * zi);
             z = zT + c;
             zi = ziT + ci;
- 
+
             if (z * z + zi * zi >= 4.0) {
                 return i;
             }
