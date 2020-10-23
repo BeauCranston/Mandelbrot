@@ -34,13 +34,19 @@ public class TwoStarterCode extends Application {
     public void start(Stage primaryStage) {
         Pane fractalRootPane = new Pane();
         Canvas canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
- 
-        paintSet(canvas.getGraphicsContext2D(),
-                MANDELBROT_RE_MIN,
-                MANDELBROT_RE_MAX,
-                MANDELBROT_IM_MIN,
-                MANDELBROT_IM_MAX);
- 
+        int numberOfThreads = 8;
+
+        for(int i = 0; i < numberOfThreads; i++){
+            Thread executionThread = new Thread (new FractionalGraphicExecution(canvas.getGraphicsContext2D(), 50, MANDELBROT_RE_MAX, MANDELBROT_RE_MIN, MANDELBROT_IM_MAX, MANDELBROT_IM_MIN, CANVAS_WIDTH, CANVAS_HEIGHT, numberOfThreads, i));
+            executionThread.start();
+            try {
+                executionThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+
         fractalRootPane.getChildren().add(canvas);
  
         Scene scene = new Scene(fractalRootPane, CANVAS_WIDTH + 2 * X_OFFSET, CANVAS_HEIGHT + 2 * Y_OFFSET);
@@ -49,54 +55,7 @@ public class TwoStarterCode extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
- 
-    private void paintSet(GraphicsContext ctx, double reMin, double reMax, double imMin, double imMax) {
-        double precision = Math.max((reMax - reMin) / CANVAS_WIDTH, (imMax - imMin) / CANVAS_HEIGHT);
-        int convergenceSteps = 50;
-        for(int i = 1; i <= 10; i++){
 
-            int iXr = i * 70;
-            double xStartPrecision =  reMin + precision * 70 * i;
-            for (double c = xStartPrecision, xR = iXr - 70; xR < iXr; c = c + precision, xR++) {
-                System.out.println(precision);
-                for (double ci = imMin, yR = 0; yR < CANVAS_HEIGHT; ci = ci + precision, yR++) {
-                    double convergenceValue = checkConvergence(ci, c, convergenceSteps);
-                    double t1 = (double) convergenceValue / convergenceSteps;
-                    double c1 = Math.min(255 * 2 * t1, 255);
-                    double c2 = Math.max(255 * (2 * t1 - 1), 0);
-
-                    if (convergenceValue != convergenceSteps) {
-                        ctx.setFill(Color.color(c2 / 255.0, c1 / 255.0, c2 / 255.0));
-                    } else {
-                        ctx.setFill(Color.PURPLE); // Convergence Color
-                    }
-                    ctx.fillRect(xR, yR, 1, 1);
-                }
-            }
-        }
-
-    }
- 
-    /**
-     * Checks the convergence of a coordinate (c, ci) The convergence factor
-     * determines the color of the point.
-     */
-    private int checkConvergence(double ci, double c, int convergenceSteps) {
-        double z = 0;
-        double zi = 0;
-        for (int i = 0; i < convergenceSteps; i++) {
-            double ziT = 2 * (z * zi);
-            double zT = z * z - (zi * zi);
-            z = zT + c;
-            zi = ziT + ci;
-
-            if (z * z + zi * zi >= 4.0) {
-                return i;
-            }
-        }
-        return convergenceSteps;
-    }
- 
     public static void main(String[] args) {
         launch(args);
     }
