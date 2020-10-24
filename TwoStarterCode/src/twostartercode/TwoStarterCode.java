@@ -34,17 +34,15 @@ public class TwoStarterCode extends Application {
     public void start(Stage primaryStage) {
         Pane fractalRootPane = new Pane();
         Canvas canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-        int numberOfThreads = 8;
-
+        //set number of threads here
+        int numberOfThreads = 5;
+        //for number of threads execute the run method of the thread
         for(int i = 0; i < numberOfThreads; i++){
             Thread executionThread = new Thread (new FractionalGraphicExecution(canvas.getGraphicsContext2D(), 50, MANDELBROT_RE_MAX, MANDELBROT_RE_MIN, MANDELBROT_IM_MAX, MANDELBROT_IM_MIN, CANVAS_WIDTH, CANVAS_HEIGHT, numberOfThreads, i));
             executionThread.start();
-            try {
-                executionThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
         }
+
 
 
         fractalRootPane.getChildren().add(canvas);
