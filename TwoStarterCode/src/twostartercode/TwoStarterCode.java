@@ -15,7 +15,9 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
- 
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 public class TwoStarterCode extends Application {
     // Size of the canvas for the Mandelbrot set
     private static final int CANVAS_WIDTH = 700; 
@@ -28,19 +30,25 @@ public class TwoStarterCode extends Application {
     private static double MANDELBROT_RE_MIN = -2;  
     private static double MANDELBROT_RE_MAX = 1;       
     private static double MANDELBROT_IM_MIN = -1.2;    
-    private static double MANDELBROT_IM_MAX = 1.2;      
+    private static double MANDELBROT_IM_MAX = 1.2;
+    private ConcurrentLinkedQueue<PaintCoordinate> queue = new ConcurrentLinkedQueue<>();
  
     @Override
     public void start(Stage primaryStage) {
         Pane fractalRootPane = new Pane();
         Canvas canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
         int numberOfThreads = 10;
-        paintSet(canvas.getGraphicsContext2D(),
-                MANDELBROT_RE_MIN,
-                MANDELBROT_RE_MAX,
-                MANDELBROT_IM_MIN,
-                MANDELBROT_IM_MAX,
-                numberOfThreads);
+        for(int i = 0; i < numberOfThreads; i++){
+            Thread prodThread = new Thread(new Producer(CANVAS_WIDTH, CANVAS_HEIGHT, MANDELBROT_RE_MAX, MANDELBROT_RE_MIN, MANDELBROT_IM_MAX, MANDELBROT_IM_MIN, numberOfThreads, i, queue));
+            prodThread.start();
+        }
+        System.out.println(queue.size());
+//        for(int i = 0; i < numberOfThreads; i++){
+//            Thread conThread = new Thread(new Consumer(queue, canvas.getGraphicsContext2D()));
+//            conThread.start();
+//        }
+
+
  
         fractalRootPane.getChildren().add(canvas);
  
@@ -51,14 +59,18 @@ public class TwoStarterCode extends Application {
         primaryStage.show();
     }
  
-    private void paintSet(GraphicsContext ctx, double reMin, double reMax, double imMin, double imMax, int numberOfThreads) {
+    private void paintSet(GraphicsContext ctx, double reMin, double reMax, double imMin, double imMax, int fraction, int step, ConcurrentLinkedQueue<PaintCoordinate> queue) {
         double precision = Math.max((reMax - reMin) / CANVAS_WIDTH, (imMax - imMin) / CANVAS_HEIGHT);
         int convergenceSteps = 50;
-        int interval = CANVAS_WIDTH/numberOfThreads;
-        int intervalReMin = reMin * interval;
-        int iXr = 
+        //get the interval of which each thread draws by
+        int interval = (CANVAS_WIDTH/fraction);
+        //System.out.println(interval);
+        //get the start point of the interval
+        int intervalStartPoint = step * interval;
+        //System.out.println(intervalStartPoint);
+        double xStartValue =  reMin + precision * interval * step; //get the reMin of the interval
 
-        for (double c = reMin, xR = 0; xR < CANVAS_WIDTH; c = c + precision, xR++) {
+        for (double c = xStartValue, xR = intervalStartPoint; xR < intervalStartPoint + interval; c = c + precision, xR++) {
             for (double ci = imMin, yR = 0; yR < CANVAS_HEIGHT; ci = ci + precision, yR++) {
                 double convergenceValue = checkConvergence(ci, c, convergenceSteps);
                 double t1 = (double) convergenceValue / convergenceSteps;
@@ -66,11 +78,11 @@ public class TwoStarterCode extends Application {
                 double c2 = Math.max(255 * (2 * t1 - 1), 0);
  
                 if (convergenceValue != convergenceSteps) {
-                    ctx.setFill(Color.color(c2 / 255.0, c1 / 255.0, c2 / 255.0));
+                    queue.add(new PaintCoordinate(xR,yR, Color.color(c2 / 255.0, c1 / 255.0, c2 / 255.0)));
                 } else {
-                    ctx.setFill(Color.PURPLE); // Convergence Color
+                    queue.add(new PaintCoordinate(xR,yR, Color.PURPLE)); // Convergence Color
                 }
-                ctx.fillRect(xR, yR, 1, 1);
+
             }
         }
     }
