@@ -34,12 +34,13 @@ public class TwoStarterCode extends Application {
     public void start(Stage primaryStage) {
         Pane fractalRootPane = new Pane();
         Canvas canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
- 
+        int numberOfThreads = 10;
         paintSet(canvas.getGraphicsContext2D(),
                 MANDELBROT_RE_MIN,
                 MANDELBROT_RE_MAX,
                 MANDELBROT_IM_MIN,
-                MANDELBROT_IM_MAX);
+                MANDELBROT_IM_MAX,
+                numberOfThreads);
  
         fractalRootPane.getChildren().add(canvas);
  
@@ -50,9 +51,13 @@ public class TwoStarterCode extends Application {
         primaryStage.show();
     }
  
-    private void paintSet(GraphicsContext ctx, double reMin, double reMax, double imMin, double imMax) {
+    private void paintSet(GraphicsContext ctx, double reMin, double reMax, double imMin, double imMax, int numberOfThreads) {
         double precision = Math.max((reMax - reMin) / CANVAS_WIDTH, (imMax - imMin) / CANVAS_HEIGHT);
         int convergenceSteps = 50;
+        int interval = CANVAS_WIDTH/numberOfThreads;
+        int intervalReMin = reMin * interval;
+        int iXr = 
+
         for (double c = reMin, xR = 0; xR < CANVAS_WIDTH; c = c + precision, xR++) {
             for (double ci = imMin, yR = 0; yR < CANVAS_HEIGHT; ci = ci + precision, yR++) {
                 double convergenceValue = checkConvergence(ci, c, convergenceSteps);
