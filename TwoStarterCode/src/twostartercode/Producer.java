@@ -62,6 +62,6 @@ public class Producer implements Runnable {
 
             }
         }
-        System.out.println(queue.size());
+        //System.out.println(queue.size());
     }
 }

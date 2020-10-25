@@ -9,6 +9,7 @@ Take this sample program and convert it to a multi threaded structure.
 package twostartercode;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -37,18 +38,22 @@ public class TwoStarterCode extends Application {
     public void start(Stage primaryStage) {
         Pane fractalRootPane = new Pane();
         Canvas canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-        int numberOfThreads = 10;
+        int numberOfThreads = 2;
         for(int i = 0; i < numberOfThreads; i++){
             Thread prodThread = new Thread(new Producer(CANVAS_WIDTH, CANVAS_HEIGHT, MANDELBROT_RE_MAX, MANDELBROT_RE_MIN, MANDELBROT_IM_MAX, MANDELBROT_IM_MIN, numberOfThreads, i, queue));
             prodThread.start();
+
         }
-        System.out.println(queue.size());
-//        for(int i = 0; i < numberOfThreads; i++){
-//            Thread conThread = new Thread(new Consumer(queue, canvas.getGraphicsContext2D()));
-//            conThread.start();
-//        }
+
+        for(int i = 0; i < numberOfThreads; i++){
+
+            Thread conThread = new Thread(new Consumer(queue, canvas.getGraphicsContext2D()));
+            conThread.start();
+
+        }
 
 
+        //paintCoordinates(canvas.getGraphicsContext2D());
  
         fractalRootPane.getChildren().add(canvas);
  
@@ -58,7 +63,17 @@ public class TwoStarterCode extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
- 
+
+    private void paintCoordinates(GraphicsContext ctx){
+
+        while(queue.peek() != null){
+            PaintCoordinate pc = queue.poll();
+            ctx.setFill(pc.getColor());
+            ctx.fillRect(pc.getX(), pc.getY(), 1, 1);
+        }
+    }
+
+
     private void paintSet(GraphicsContext ctx, double reMin, double reMax, double imMin, double imMax, int fraction, int step, ConcurrentLinkedQueue<PaintCoordinate> queue) {
         double precision = Math.max((reMax - reMin) / CANVAS_WIDTH, (imMax - imMin) / CANVAS_HEIGHT);
         int convergenceSteps = 50;

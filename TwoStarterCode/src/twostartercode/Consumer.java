@@ -14,9 +14,13 @@ public class Consumer implements Runnable {
     }
     @Override
     public void run() {
-        PaintCoordinate pc = queue.poll();
-        ctx.setFill(pc.getColor());
-        ctx.fillRect(pc.getX(), pc.getY(), 1, 1);
+        while(queue.peek() != null){
+            PaintCoordinate pc = queue.poll();
+            ctx.setFill(pc.getColor());
+            ctx.fillRect(pc.getX(), pc.getY(), 1, 1);
+        }
+        System.out.println(queue.size());
+
 
     }
 }
