@@ -46,7 +46,6 @@ public class Producer implements Runnable {
         int intervalStartPoint = step * interval;
         //System.out.println(intervalStartPoint);
         double xStartValue =  reMin + precision * interval * step; //get the reMin of the interval
-
         for (double c = xStartValue, xR = intervalStartPoint; xR < intervalStartPoint + interval; c = c + precision, xR++) {
             for (double ci = imMin, yR = 0; yR < canvasHeight; ci = ci + precision, yR++) {
                 double convergenceValue = checkConvergence(ci, c, convergenceSteps);
